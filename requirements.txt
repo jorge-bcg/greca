@@ -7,4 +7,3 @@ shapely
 pyproj
 geopandas
 requests
-json
