@@ -2,7 +2,6 @@ networkx
 openrouteservice
 streamlit
 pandas
-os
 numpy
 matplotlib
 shapely
