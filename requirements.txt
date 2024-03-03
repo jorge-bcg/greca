@@ -1,12 +1,10 @@
 networkx
 openrouteservice
-streamlit
 pandas
 numpy
 matplotlib
 shapely
 pyproj
-math
 geopandas
 requests
 json
