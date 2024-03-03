@@ -248,7 +248,7 @@ def computeDrivingMetrics(sel,p):
 
 	headers = {
 		'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
-		'Authorization': ors_key,
+		'Authorization': st.secrets["ors_key"],
 		'Content-Type': 'application/json; charset=utf-8'
 	}
 	call = requests.post(ors_url, json=body, headers=headers)
@@ -379,7 +379,7 @@ def pingClimateNeutral(route,dist):
 	#print(GC_call_data)
 	response = requests.get(GC_API_URL,
 						params=GC_call_data,
-						auth=(GC_API_KEY, ''))
+						auth=(st.secrets["GC_API_KEY"], ''))
 
 	if response.status_code == 200:
 		response_data = json.loads(response.text)
