@@ -437,8 +437,8 @@ st.set_page_config(
 if 'key' not in st.session_state:
     st.session_state['key'] = 'Uninitiaded'
 
-cwd = os.getcwd() #"D:\\Dropbox (Personal)\\Event Location Optimization"  # Get the current working directory (cwd)
-files = os.listdir(cwd)  # Get all the files in that directory
+#cwd = os.getcwd() #"D:\\Dropbox (Personal)\\Event Location Optimization"  # Get the current working directory (cwd)
+#files = os.listdir(cwd)  # Get all the files in that directory
 #print("Files in %r: %s" % (cwd, files))
 
 cola,colb = st.columns([0.8,0.2])
@@ -453,8 +453,8 @@ st.markdown("The tool is easy to use:")
 st.markdown("1. Select the \"origin\" cities, where attendees reside.\n2. Click the \"Calculate impacts\" button to get possible locations and an estimate of the impacts.\n3. Edit the results as you see fit to better match how your team would actually travel.")
 st.markdown("This first version only covers US cities and driving and flying modes.")
 
-cities = pd.read_csv(cwd + "\\output_cities.csv")
-distances = pd.read_csv(cwd + "\\geodesic_distances.csv")
+cities = pd.read_csv("output_cities.csv")
+distances = pd.read_csv("geodesic_distances.csv")
 
 #st.map(cities)
 selected_cities = st.multiselect("#### Enter origin cities", cities['Name'].sort_values(), on_change=None, placeholder="Choose all cities")
@@ -500,13 +500,13 @@ if len(selected_cities) > 0:
 prog_value = 0
 if st.button("Calculate impacts",disabled=button_dis):
 	
-	input_airports = pd.read_csv(cwd + "\\airport-codes.csv")#, nrows=5)
+	input_airports = pd.read_csv("airport-codes.csv")#, nrows=5)
 	input_airports['id'] = input_airports['iata_code']
 	airports = gpd.GeoDataFrame(input_airports, geometry=gpd.points_from_xy(input_airports.lon, input_airports.lat), crs="EPSG:4326")
 	airports.to_crs("3857",inplace=True)
 	#st.dataframe(airports.drop(columns="geometry"))
 
-	airport_pairs = pd.read_csv(cwd + "\\airport_pairs.csv", thousands=',')#, nrows=5)
+	airport_pairs = pd.read_csv("airport_pairs.csv", thousands=',')#, nrows=5)
 
 	#Create the graph from the observed airplane data
 	G = nx.from_pandas_edgelist(airport_pairs,source="Departure",target="Arrival",edge_attr=["Flights","Inverse Flights","Distance", "Flight Time Hrs"],create_using=nx.DiGraph())
