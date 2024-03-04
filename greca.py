@@ -445,8 +445,8 @@ cola,colb = st.columns([0.8,0.2])
 with cola:
 	st.markdown("# Greca")
 	st.markdown("**G**athering with **Re**duced **E**missions **Ca**lculator v0.1")
-with colb:
-	st.image("Greca.png", width=200, use_column_width="auto")
+#with colb:
+	#st.image("Greca.png", width=200, use_column_width="auto")
 st.divider()
 st.markdown("Planning an \"off-site\" gathering for your team? Use this simple tool to estimate the carbon emissions resulting from travel to and from the gathering. It also tallies travel time/distance for attendees.")
 st.markdown("The tool is easy to use:")
@@ -546,6 +546,9 @@ if st.button("Calculate impacts",disabled=button_dis):
 	top_cities['valid'] = top_cities.apply(lambda x: True if sum(filter(None, x['flyers'])) + sum(filter(None, x['carpax'])) == edited_input_df['Number of attendees'].sum() else False,axis=1)
 	#st.dataframe(top_cities)
 	top_cities = top_cities[top_cities['valid']]
+	if top_cities.empty:
+		st.warning("Sorry, couldn't find any suitable options")
+		st.stop()
 	#top_cities = top_cities[~(top_cities['flyers'].isnull().any()) & ~(top_cities['carpax'].isnull().any())]
 	#top_cities = top_cities[~top_cities['carpax'].isnull().any()]
 	#st.dataframe(top_cities)
