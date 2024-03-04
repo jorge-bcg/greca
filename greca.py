@@ -129,7 +129,7 @@ def computeFlightMetrics(sel,p):
 		destination = Point(p.iloc[pc]['lon'],p.iloc[pc]['lat'])
 		de_xy = (p.iloc[pc]['lat'],p.iloc[pc]['lon'])
 		destination_pj = projectPoint(destination)
-		destination_bf = shapely.buffer(destination_pj,distance=(30*1609))
+		destination_bf = shapely.buffer(destination_pj,distance=(50*1609))
 		nearest_dest_airports = airports.sindex.query(destination_bf, predicate="intersects")
 		air_trips = [[]* 4] * len(sel) #Storing the results in this 2D array, one subarray for each of the origin cities
 		
@@ -152,7 +152,7 @@ def computeFlightMetrics(sel,p):
 			origin = Point(sel.iloc[s]['lon'],sel.iloc[s]['lat'])
 			og_xy = (sel.iloc[s]['lat'],sel.iloc[s]['lon'])
 			origin_pj = projectPoint(origin)
-			origin_bf = shapely.buffer(origin_pj,distance=(30*1609))
+			origin_bf = shapely.buffer(origin_pj,distance=(50*1609))
 			if (geodesic(og_xy, de_xy).m /1609 < min_flight_distance): #If too short to fly
 				#return [None,None,None,None]
 				# print("Too short to fly, appending Nones and leaving the loop")
@@ -445,8 +445,8 @@ cola,colb = st.columns([0.8,0.2])
 with cola:
 	st.markdown("# Greca")
 	st.markdown("**G**athering with **Re**duced **E**missions **Ca**lculator v0.1")
-#with colb:
-	#st.image("Greca.png", width=200, use_column_width="auto")
+with colb:
+	st.image("Greca.png", width=200, use_column_width="auto")
 st.divider()
 st.markdown("Planning an \"off-site\" gathering for your team? Use this simple tool to estimate the carbon emissions resulting from travel to and from the gathering. It also tallies travel time/distance for attendees.")
 st.markdown("The tool is easy to use:")
