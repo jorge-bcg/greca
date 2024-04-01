@@ -1,3 +1,4 @@
+streamlit
 networkx
 openrouteservice
 pandas
@@ -8,3 +9,5 @@ pyproj
 geopandas
 requests
 geopy
+google.cloud
+google-cloud-secret-manager
