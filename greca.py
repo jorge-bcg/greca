@@ -14,18 +14,18 @@ from shapely.ops import transform
 #from shapely import Point
 import pyproj
 import math
-#from google.cloud import secretmanager
+from google.cloud import secretmanager
 #import google-cloud-secret-manager as gsm
 
 ors_url = "https://api.openrouteservice.org/v2/matrix/driving-car"
 GC_API_URL = "https://api.goclimateneutral.org/v1/flight_footprint"
 
-# #Make sure to run the following in the GCloud LI: gcloud auth application-default login
-# project_id = "greca-418615"
-# client = secretmanager.SecretManagerServiceClient()
-# name = f"projects/{project_id}/secrets/GC_API_KEY/versions/1"
-# response = client.access_secret_version(name=name)
-# GC_API_KEY = response.payload.data.decode("UTF-8")
+#Make sure to run the following in the GCloud LI: gcloud auth application-default login
+project_id = "greca-418615"
+client = secretmanager.SecretManagerServiceClient()
+name = f"projects/{project_id}/secrets/GC_API_KEY/versions/1"
+response = client.access_secret_version(name=name)
+GC_API_KEY = response.payload.data.decode("UTF-8")
 
 # print(GC_API_KEY)
 
@@ -307,7 +307,7 @@ def pingClimateNeutral(route,dist):
 
 	response = requests.get(GC_API_URL,
 						params=GC_call_data,
-						auth=(st.secrets["GC_API_KEY"], ''))
+						auth=(GC_API_KEY, ''))
 
 	if response.status_code == 200:
 		response_data = json.loads(response.text)
