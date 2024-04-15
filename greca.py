@@ -320,17 +320,23 @@ def pingClimateNeutral(route,dist):
 def myround(x, base=5):
     return base * round(x/base)
 
-def emissionsSecondPass(x):
+def flyEmissionsArray(x):
+	fly_emissions_array = list(map(lambda b,c: pingClimateNeutral(b,c) if b != None else 0,x['estRoute_flying'],x['PMT_flying']))
+	print("Flying emissions: " + str(fly_emissions_array))
+	return fly_emissions_array
+
+def emissionsSecondPass(x): #e is the emissions array obtained from the prev function
 	#From driving
 	distance_driven = sum(list(map(lambda a,b: a*b if a>0 else 0,x['cars'],x['PMT_driving'])))
 	drive_emissions = distance_driven * car_efficiency
 	#From flying
-	fly_emissions = sum(list(map(lambda a,b,c: a * pingClimateNeutral(b,c) if a>0 else 0,x['flyers'],x['estRoute_flying'],x['PMT_flying'])))
-	
+	fly_emissions = sum(list(map(lambda a,e: a * e if a>0 else 0,x['flyers'],x['fly_emissions_array'])))
 	emissions = drive_emissions + fly_emissions
 	
 	emissions = emissions / 2204 #These many grams in a pound
 	emissions = myround(emissions,10) #Rounding to 10 lb
+	
+
 	return emissions
 
 def createPrettyCols(x):
@@ -338,14 +344,19 @@ def createPrettyCols(x):
 	flying = ""
 	for i in range(len(selected_cities)):
 		if x['carpax'][i] > 0 and x['PMT_driving'][i] > 0:
-			driving = driving + str(x['carpax'][i]) + (" person" if x['carpax'][i] == 1 else " people" ) +" riding " + str(x['cars'][i]) + " car(s) from " + selected_cities[i].split(",")[0] + " (~" + '%.1f' % x['PHT_driving'][i] + " hours); "
+			driving = driving + str(x['carpax'][i]) + (" person" if x['carpax'][i] == 1 else " people" ) +" riding " + str(x['cars'][i]) + " car(s) from " +\
+				  selected_cities[i].split(",")[0] + " (~" + '%.1f' % x['PHT_driving'][i] + " hours ea. way, ~"+ '%.1f'  % (x['PMT_driving'][i]*2*(car_efficiency/2204)) + " lb CO2/car-rt); "
 		if x['flyers'][i] > 0 and x['PMT_flying'][i] > 0:
-			flying = flying + str(x['flyers'][i]) + (" person" if x['flyers'][i] == 1 else " people" ) + " flying " + x['estRoute_flying'][i]+ " (~" + '%.1f' % x['PHT_flying'][i] + " hours); "
+			flying = flying + str(x['flyers'][i]) + (" person" if x['flyers'][i] == 1 else " people" ) + " flying " + x['estRoute_flying'][i]+\
+				  " (~" + '%.1f' % x['PHT_flying'][i] + " hours ea. way, ~" +  '%d' % (x['new_fly_emissions_array'][i]) + " lb CO2/pax-rt); "
 	if driving == "":
 		driving = "No one drives"
 	if flying == "":
 		flying = "No one flies"
 	return [driving,flying]
+
+def convert_to_lb(list_item):
+	return [myround(item*2/2204,5) for item in list_item] #returns a round trip number
 
 #Page config
 st.set_page_config(
@@ -462,16 +473,13 @@ if st.button("Calculate impacts",disabled=button_dis):
 	
 	top_cities['emissionsEst'] = top_cities.apply(lambda x: emissionsFirstPass(x), axis=1)
 	
-
 	top_cities['color'] = '#ad2636'
 
 	top_cities['rank'] = top_cities['emissionsEst'].rank(ascending=True) #The strongest potential is in lower scores
 	top_cities.sort_values(by='rank', ascending=True, inplace=True)
 
-	top_cities['drivingPretty'] = top_cities.apply(lambda x: createPrettyCols(x)[0],axis=1)
-	top_cities['flyingPretty'] = top_cities.apply(lambda x: createPrettyCols(x)[1],axis=1)
 
-	output_df = top_cities[['Name','PMT_driving','PHT_driving','PMT_flying','PHT_flying','estRoute_flying','flyers','carpax','cars','color','lat','lon','emissionsEst','drivingPretty','flyingPretty']].head(20) #Top 10 choices
+	output_df = top_cities[['Name','PMT_driving','PHT_driving','PMT_flying','PHT_flying','estRoute_flying','flyers','carpax','cars','color','lat','lon','emissionsEst']].head(20) #Top 10 choices
 	st.session_state['key'] = 'Initiated'
 
 if st.session_state['key'] == 'Initiated':
@@ -482,9 +490,17 @@ if st.session_state['key'] == 'Initiated':
 		print(e)
 		st.map(pd.concat([output_df,edited_input_df]))
 	
+	
 	with st.spinner('Pulling airplane travel emissions'):
-		output_df['emissions'] = output_df.apply(lambda x: emissionsSecondPass(x)* rt_toggle, axis=1) 
+		output_df['fly_emissions_array'] = output_df.apply(lambda x: flyEmissionsArray(x), axis=1)
+		
+		output_df['emissions'] = output_df.apply(lambda x: emissionsSecondPass(x)*rt_toggle, axis=1)
+		output_df['new_fly_emissions_array'] = output_df['fly_emissions_array'].apply(convert_to_lb)
+
 	st.toast('Done!',icon='🏁')
+
+	output_df['drivingPretty'] = output_df.apply(lambda x: createPrettyCols(x)[0],axis=1)
+	output_df['flyingPretty'] = output_df.apply(lambda x: createPrettyCols(x)[1],axis=1)
 
 	output_df['Rank'] = output_df['emissions'].rank(ascending=True) #The strongest potential is in lower scores
 	output_df['PHT'] = output_df.apply(lambda r: sum(list(map(lambda x,y,a,b: myround(x*y if x>0 else 0 + a*b if a>0 else 0,0.1) * rt_toggle,r['carpax'],r['PHT_driving'],r['flyers'],r['PHT_flying']))),axis=1)
