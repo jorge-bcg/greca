@@ -322,7 +322,7 @@ def myround(x, base=5):
 
 def flyEmissionsArray(x):
 	fly_emissions_array = list(map(lambda b,c: pingClimateNeutral(b,c) if b != None else 0,x['estRoute_flying'],x['PMT_flying']))
-	print("Flying emissions: " + str(fly_emissions_array))
+	#print("Flying emissions: " + str(fly_emissions_array))
 	return fly_emissions_array
 
 def emissionsSecondPass(x): #e is the emissions array obtained from the prev function
